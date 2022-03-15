@@ -8,6 +8,7 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.colour import Colour
 from discord.guild import Member, Guild
+from ApiManager import ApiManager
 
 from cfg import default_embeds_colour, prefix, DEFAULT_PORT
 from Logger import Logger
@@ -92,10 +93,16 @@ class MessageSender():
         for i in range(len(player_data[3:])):
             player_names.append(f"**`{i+4} |`** {player_data[i+3][0]}")
             player_stats.append(f"{cls.__shortenLargeNums(player_data[i+3][1])}")
+
+        if len(player_names) > 0:
+            # getting skin avatar for the top leader
+            mchead_api_return = ApiManager.getMcHeadApi(player_names[0])
+
         await cls.sendEmbed(
             channel,
             fields=[player_names, player_stats],
-            title=title
+            title=title,
+            thumbnail_url=mchead_api_return if mchead_api_return else ""
         )
 
     @classmethod

@@ -49,3 +49,7 @@ class ApiManager():
     def __devideDataByDevideFactor(cls, devide_factor: int, data: List[tuple]) -> None:
         for i in range(len(data)):
             data[i] = (data[i][0], int(data[i][1] / devide_factor))
+
+    @classmethod
+    def getMcHeadApi(cls, player_name: str, size: int = 100):
+        return cls.__sendRequest({}, f'https://mc-heads.net/head/{player_name}/{size}.png')
