@@ -207,7 +207,10 @@ class MessageSender():
         await cls.sendEmbed(
             channel,
             [["**Cant connect to minecraft server!**"],
-            [f"Make sure you have StatsMC plugin installed on your server and port {DEFAULT_PORT} is opened"]],
+            [f"""Make sure you have:
+             - StatsMC plugin installed on your server
+             - Port {DEFAULT_PORT} is opened
+             - Ip is linked to the bot with `st!set_ip`. You can check current linked ip with `st!cfg`"""]],
             colour=Colour.red()
         )
 

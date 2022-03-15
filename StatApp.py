@@ -37,7 +37,7 @@ def owner_command(func):
 class StatApp():
     def __init__(self, client: Client) -> None:
         self.client: Client = client
-        self.commands: Dict[str, Command] = {
+        self.manager_commands: Dict[str, Command] = {
             "start": Command("start", self.__startCommand, 
             "Start! Call this command to start using bot", f"{prefix}start"),
             "set_role": Command("set_role", self.__setRoleCommand, 
@@ -46,8 +46,16 @@ class StatApp():
             "Sets minecraft server ip. Bot will request player data from there", f"{prefix}set_ip <minecraft server ip>"),
             "cfg": Command("cfg", self.__cfgCommand, 
             "Shows current bot's settings", f"{prefix}cfg"),
+        }
+        self.user_commands: Dict[str, Command] = {
             "help": Command("help", self.__helpCommand, 
             "Shows help message", f"{prefix}help"),
+            "guide": Command("guide", self.__guideCommand, 
+            "Shows guide how to use statistic commands", f"{prefix}guide"),
+            "example": Command("example", self.__exampleCommand, 
+            "Shows example of searching statistic", f"{prefix}example"),
+            "commands": Command("commands", self.__basicCommandsCommand, 
+            "Shows basic commands list.", f"{prefix}commands"),
         }
         self.owner_commands: Dict[str, Command] = {
             "data": Command("data", self.__dataOwnerCommand, 
@@ -68,12 +76,15 @@ class StatApp():
             await self.owner_commands[command].handler(message)
         if type(message.channel) == TextChannel:
             Logger.writeApiLog(f"Guild {message.guild}({message.guild.id}) called '{message.content}'")
-            if command in self.commands:
+            if command in self.manager_commands:
                 if self.__isPermitted(message):
                     guild_data = FileManager.getGuildData(message.guild.id)
-                    await self.commands[command].handler(message, guild_data)
+                    await self.manager_commands[command].handler(message, guild_data)
                 else:
                     await MessageSender.sendNotPermitted(message.channel)
+            elif command in self.user_commands:
+                guild_data = FileManager.getGuildData(message.guild.id)
+                await self.user_commands[command].handler(message, guild_data)
             else:
                 guild_data = FileManager.getGuildData(message.guild.id)
                 await self.__statsCommandsHandler(message, guild_data)
@@ -191,12 +202,97 @@ class StatApp():
         await MessageSender.sendCfg(message.channel, guild_data)
 
     async def __helpCommand(self, message: Message, guild_data):
+        titels: List[str] = []
+        bodies: List[str] = []
+
+        titels.append("**User commands:**")
+        bodies.append("-"*5)
+        for _, cmd in self.user_commands.items():
+            titels.append(f"**`{cmd.syntax}`**")
+            bodies.append(f"*{cmd.description}*")
+
+        titels.append("**Manager commands:**")
+        bodies.append("-"*5)
+        for _, cmd in self.manager_commands.items():
+            titels.append(f"**`{cmd.syntax}`**")
+            bodies.append(f"*{cmd.description}*")
         await MessageSender.sendEmbed(
             message.channel,
-            [[f"**`{cmd.syntax}`**" for _, cmd in self.commands.items()] + 
-            ["**Get the plugin:**", "**Have a question? Found bug? Contact us here!**"],
-            [f"*{cmd.description}*" for _, cmd in self.commands.items()] + 
-            ["https://www.curseforge.com/minecraft/bukkit-plugins/statsmc", "https://discord.gg/Y7cnUV58Rn"]],
+            [titels + ["**Get the plugin:**", "**Have a question? Found bug? Contact us here!**"],
+            bodies + ["https://www.curseforge.com/minecraft/bukkit-plugins/statsmc", "https://discord.gg/Y7cnUV58Rn"]],
+        )
+
+    async def __guideCommand(self, message: Message, guild_data):
+        msg = """Syntax is `st!<statistic_name>`
+                There are hundrets of commands and they all cant be listed here.
+                Basically you can access all the stats from Statistics tab from ingame menu.
+                Just type anything and bot will try to guess what did you mean and suggest its thoughts (:
+
+                To see usage example use `st!example`
+
+                Some statistics require additional arguments.
+                Syntax is `st!<statistic_name> <entity_type/material_type>`
+                Bot will try to guess second argument too. When the first argument is correct.
+
+                To see basic commands use `st!commands`"""
+        await MessageSender.sendEmbed(
+            message.channel,
+            [["**Guide**"], [msg]],
+        )
+
+    async def __exampleCommand(self, message: Message, guild_data):
+        first_example = """For an example, you want to see top for villager trades amount.
+                            You type `st!villager_trade`. Bot responses you:
+                            *I am not sure what you meant by `villager_trade`. There are 8 most likely variants:
+                            `damage_taken`, `talked_to_villager`, `traded_with_villager`, ...*
+                            You spot the variant you need *traded_with_villager* and type `st!traded_with_villager`
+                            Voila! Bot responses you with player top.
+                            """
+        second_example = """You want to see top for amount of mined diamonds.
+                            You type `st!mine diamond`. Bot doesnt recognise *mine* and suggests
+                            *`mine_block`, `pig_one_cm`, ...*
+                            You again spot *mine_block* and type `st!mine_block diamond`.
+                            Voil...a?? Why do I see an empty top list?
+                            """
+        problems = """Thats because minecraft by default tracks even impossible stats.
+                        It tracks *mine_block* with all existing items. Not only blocks. And you cant mine diamond item.
+                        But you can mine diamond ore. So with `st!mine_block diamond_ore` you get your top list.
+                        
+                        And you realise that you have mined way more dia ores than it shows.
+                        Thats because regular diamond ore is quite rare in current version.
+                        You need to add to it deepslate variant. You type `st!mine_block deepslate_diamond_ore`
+                        Voila! Here are your stats. 
+                        *(note: if you type second argument incorrectly, bot will also suggest you correct close variants)*"""
+
+        await MessageSender.sendEmbed(
+            message.channel,
+            [["**First example**", "**Second example**", "**Possible problems**"], 
+            [first_example, second_example, problems]],
+        )
+
+    async def __basicCommandsCommand(self, message: Message, guild_data):
+        msg = """   `st!mine_block <item_name>` - amount of specific block mined
+                    `st!use_item <item_name>` - amount of specific item used. It may be
+                    blocks (means blocks placed), tools, food (times eaten), fireworks, etc. Anything
+                    you can use by clicking.
+                    `st!craft_item <item_name>` - amount of specific item crafted
+                    `st!drop <item_name>` - amount of specific item dropped
+                    `st!pickup <item_name>` - amount of specific item picked up
+                    `st!break_item <item_name>` - amount of tool broken
+                    `st!mob_kills` - general amount of killed mobs
+                    `st!kill_entity <mob_name>` - amount of specific mob killed
+                    `st!entity_killed_by <mob_name>` - amount of deaths from specific mob"""
+                    
+        note =   """*these are just most used commands. 
+                    As I said there are dozens of statistics that mc tracks. Hundrets of possible blocks, entities.
+                    If you see something in stat game tab, you can find it here.
+                    
+                    If you have suggestions about command aliases, feel free to contact me in my discord server*"""
+
+        await MessageSender.sendEmbed(
+            message.channel,
+            [["**Basic commands**", "*Note*"], 
+            [msg, note]],
         )
 
     @owner_command
