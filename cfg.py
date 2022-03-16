@@ -27,6 +27,7 @@ prefix = "st!"
 default_embeds_colour = Colour.green()
 API_PATH = "/mcstats/all_players"
 DEFAULT_PORT = "11236"
+TIME_OUT = 5 #seconds
 
 CUTOFF = 0.4
 MAX_GUESSES = 10

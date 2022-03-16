@@ -3,13 +3,13 @@ from json import loads
 from typing import Dict, List, Tuple
 
 from Logger import Logger
-from cfg import API_PATH, MAX_TOP_PLAYERS
+from cfg import API_PATH, MAX_TOP_PLAYERS, TIME_OUT
 
 class ApiManager():
     @classmethod
     def __sendRequest(cls, params: str, addr: str):
         try:
-            resp = get(url=addr, params=params)
+            resp = get(url=addr, params=params, timeout=TIME_OUT)
         except RequestException as e:
             Logger.writeApiFatalLog(f"{e}")
             return False
