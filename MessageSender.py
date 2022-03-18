@@ -10,12 +10,13 @@ from discord.colour import Colour
 from discord.guild import Member, Guild
 from ApiManager import ApiManager
 
-from cfg import default_embeds_colour, prefix, DEFAULT_PORT
+from cfg import BOT_NAME, default_embeds_colour, prefix, DEFAULT_PORT
 from Logger import Logger
 
 from api_args.stats import stats
 from api_args.entities import entities
 from api_args.materials import materials
+from messages_cfg import short_numbers, info_msgs, cfg_msg, footer_text, lang_switched_msg
 
 class MessageSender():
     @classmethod
@@ -23,10 +24,10 @@ class MessageSender():
         return f"<t:{int(mktime(datetime.now().timetuple()))}>"
 
     @classmethod
-    def __shortenLargeNums(cls, number: int) -> str:
+    def __shortenLargeNums(cls, number: int, lang: str) -> str:
         d = {
-            1000000: "M",
-            1000: "K",
+            1000000: short_numbers["million"][lang],
+            1000: short_numbers["thausand"][lang],
         }
 
         for k, v in d.items():
@@ -36,7 +37,7 @@ class MessageSender():
         return f"**{str(number)}**"
 
     @classmethod
-    async def sendEmbed(cls, channel: TextChannel, fields: List[List[str]], thumbnail_url="", colour: Colour=default_embeds_colour, guild_thumbnail: bool=False, guild_footer=True, delete_after=-1, author: Member=None, title: str=None):
+    async def sendEmbed(cls, channel: TextChannel, fields: List[List[str]], lang: str, thumbnail_url="", colour: Colour=default_embeds_colour, guild_thumbnail: bool=False, guild_footer=True, delete_after=-1, author: Member=None, title: str=None):
         if title:
             embed_ = Embed(title=title, colour=colour)
         else:
@@ -63,8 +64,11 @@ class MessageSender():
         if thumbnail_url != "":
             embed_.set_thumbnail(url=thumbnail_url)
 
-        if guild_footer and guild_icon_url:
-            embed_.set_footer(text=f"StatsMC | Found bug? Have a question? Use {prefix}help to see support server link", icon_url=guild_icon_url)
+        if guild_footer:
+            if guild_icon_url:
+                embed_.set_footer(text=footer_text[lang], icon_url=guild_icon_url)
+            else:
+                embed_.set_footer(text=footer_text[lang])
 
         if author:
             embed_.set_author(name=str(author.name)+'#'+str(author.discriminator), icon_url=author.avatar_url)
@@ -75,7 +79,7 @@ class MessageSender():
             return await channel.send(embed=embed_)
 
     @classmethod
-    async def sendStats(cls, channel: TextChannel, player_data: List[Tuple[str, int]], stat: str, arg: str = None):
+    async def sendStats(cls, channel: TextChannel, player_data: List[Tuple[str, int]], stat: str, lang: str, arg: str = None):
         title = f"{stats[stat]['description']}"
         if arg:
             # time complexity O(1) for dicts so its fine
@@ -88,11 +92,11 @@ class MessageSender():
         # processing top 3 players
         for i in range(len(player_data[:3])):
             player_names.append(f"**`{i+1} | {player_data[i][0]} `**")
-            player_stats.append(f"> {cls.__shortenLargeNums(player_data[i][1])}")
+            player_stats.append(f"> {cls.__shortenLargeNums(player_data[i][1], lang)}")
         # processing rest of the players
         for i in range(len(player_data[3:])):
             player_names.append(f"**`{i+4} |`** {player_data[i+3][0]}")
-            player_stats.append(f"{cls.__shortenLargeNums(player_data[i+3][1])}")
+            player_stats.append(f"{cls.__shortenLargeNums(player_data[i+3][1], lang)}")
 
         if len(player_names) > 0:
             # getting skin avatar for the top leader
@@ -100,125 +104,144 @@ class MessageSender():
 
         await cls.sendEmbed(
             channel,
-            fields=[player_names, player_stats],
+            [player_names, player_stats],
+            lang,
             title=title,
             thumbnail_url=mchead_api_return if mchead_api_return else ""
         )
 
     @classmethod
-    async def sendStatArgNotFound(cls, channel: TextChannel, user_input):
+    async def sendStatArgNotFound(cls, channel: TextChannel, user_input, lang: str):
         await cls.sendEmbed(
             channel,
-            fields=[[f"I dont recognise `{user_input}`"],
-            ["Keep in mind that I provide only vanilla statistics. So only statistics that can be found in *Statistics* tab in minecraft menu"]],
+            [[info_msgs["stat_arg_not_found"]["name"][lang].format(user_input=user_input)],
+            [info_msgs["stat_arg_not_found"]["value"][lang]]],
+            lang,
             colour=Colour.light_gray()
         )
 
     @classmethod
-    async def sendStatArgSeveralResults(cls, channel: TextChannel, user_input: str, results: List[str]):
-        variants_str = f"There are **{len(results)}** most likely variants:\n"
+    async def sendStatArgSeveralResults(cls, channel: TextChannel, user_input: str, results: List[str], lang: str):
+        variants_str = info_msgs["stat_several_results"]["value"][lang].format(amount=len(results))
         for result in results[:-1]:
             variants_str += f"`{result}`,"
         variants_str += f"`{results[-1]}`."
         await cls.sendEmbed(
             channel,
-            fields=[[f"I am not sure what you meant by `{user_input}`!"],
+            [[info_msgs["stat_several_results"]["name"][lang].format(user_input=user_input)],
             [variants_str]],
+            lang,
             colour=Colour.light_gray()
         )
 
     @classmethod
-    async def sendStatRequiresArgument(cls, channel: TextChannel, stat: str, argument_type: str, example_grop: List[str] = ["argument"]):
+    async def sendStatRequiresArgument(cls, channel: TextChannel, stat: str, argument_type: str, lang: str, example_grop: List[str] = ["argument"]):
         await cls.sendEmbed(
             channel,
-            fields=[[f"{stat} requires {argument_type} argument!"],
-            [f"Example: `{prefix}{stat} {choice(example_grop)}`"]],
+            [[info_msgs["stat_requires_argument"]["name"][lang].format(stat=stat, argument_type=argument_type)],
+            [info_msgs["stat_requires_argument"]["value"][lang].format(stat=prefix+stat, arg=choice(example_grop))]],
+            lang,
             colour=Colour.light_gray()
         )
 
     @classmethod
-    async def sendNotSetUp(cls, channel: TextChannel):
+    async def sendNotSetUp(cls, channel: TextChannel, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Server is not set up!**"],
-            [f"Use `{prefix}start` first. Install StatsMC plugin on your server (Link can be found in help message) and then make sure you set up your server's ip with `{prefix}set_ip`"]],
+            [[info_msgs["guild_not_set_up"]["name"][lang]],
+            [info_msgs["guild_not_set_up"]["value"][lang]]],
+            lang,
             colour=Colour.red()
         )
 
     @classmethod
-    async def sendGuildInited(cls, channel: TextChannel):
+    async def sendGuildInited(cls, channel: TextChannel, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Your server was linked!**", "*Friendly reminder:*"],
-            ["Before using bot consider setting manager role and minecraft server ip.",
-            "*This bot requires StatsMC plugin running on the server. Link can be found in help message*"]],
+            [info_msgs["guild_inited"]["name"][lang],
+            info_msgs["guild_inited"]["value"][lang]],
+            lang,
             guild_thumbnail=True
         )
 
     @classmethod
-    async def sendGuildAlreadyInited(cls, channel: TextChannel):
+    async def sendGuildAlreadyInited(cls, channel: TextChannel, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Oops!**"],
-            ["Your server is already linked"]],
+            [[info_msgs["guild_alr_inited"]["name"][lang]],
+            [info_msgs["guild_alr_inited"]["value"][lang]]],
+            lang,
         )
 
     @classmethod
-    async def sendParameterSet(cls, channel: TextChannel, parameter_name: str, parameter_val: str):
+    async def sendParameterSet(cls, channel: TextChannel, parameter_name: str, parameter_val: str, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Success!**"],
-            [f"{parameter_name} was set to {parameter_val}"]],
+            [[info_msgs["success"][lang]],
+            [info_msgs["parameter_set"][lang].format(name=info_msgs["parameters"][parameter_name][lang], val=parameter_val)]],
+            lang,
         )
 
     @classmethod
-    async def sendCfg(cls, channel: TextChannel, cfg_data: dict):
+    async def sendLangSwitched(cls, channel: TextChannel, lang: str):
+        await cls.sendEmbed(
+            channel,
+            [[lang_switched_msg[lang]],
+            [f"-"]],
+            lang,
+            colour=Colour.green()
+        )
+
+    @classmethod
+    async def sendCfg(cls, channel: TextChannel, cfg_data: dict, lang: str):
         titels = []
         values = []
-        titels.append("**Manager role**")
-        values.append("> Missing" if cfg_data["mgr_role"] == -1 else f"> <@&{cfg_data['mgr_role']}>")
-        titels.append("**Server IP**")
-        values.append(f"> {cfg_data['server_ip']}")
+        titels.append(cfg_msg["mgr_field_name"][lang])
+        values.append(cfg_msg["missing_value"][lang] if cfg_data["mgr_role"] == -1 else f"> <@&{cfg_data['mgr_role']}>")
+        titels.append(cfg_msg["ip_field_name"][lang])
+        values.append(cfg_msg["missing_value"][lang] if cfg_data["server_ip"] == "" else f"> {cfg_data['server_ip']}")
         await cls.sendEmbed(
             channel,
             [titels, values],
+            lang,
         )
 
     @classmethod
-    async def sendNotPermitted(cls, channel: TextChannel):
+    async def sendNotPermitted(cls, channel: TextChannel, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**You are not permitted to use this command!**"],
+            [[info_msgs["not_permitted"][lang]],
             [f"-"]],
+            lang,
             colour=Colour.red()
         )
 
     @classmethod
-    async def sendInvalidSyntax(cls, channel: TextChannel, message: str):
+    async def sendInvalidSyntax(cls, channel: TextChannel, error_type: str, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Invalid syntax**"],
-            [message]],
+            [[info_msgs["invalid_syntax"][lang]],
+            [info_msgs["invalid_syntax_comments"][error_type][lang]]],
+            lang,
+            colour=Colour.red()
+        )
+
+    @classmethod   
+    async def sendCantConnect(cls, channel: TextChannel, lang: str):
+        await cls.sendEmbed(
+            channel,
+            [[info_msgs["cant_connect"]["name"][lang]],
+            [info_msgs["cant_connect"]["value"][lang]]],
+            lang,
             colour=Colour.red()
         )
 
     @classmethod
-    async def sendCantConnect(cls, channel: TextChannel):
+    async def sendIpNotSetUp(cls, channel: TextChannel, lang: str):
         await cls.sendEmbed(
             channel,
-            [["**Cant connect to minecraft server!**"],
-            [f"""Make sure you have:
-             - StatsMC plugin installed on your server
-             - Port {DEFAULT_PORT} is opened
-             - Ip is linked to the bot with `st!set_ip`. You can check current linked ip with `st!cfg`"""]],
-            colour=Colour.red()
-        )
-
-    @classmethod
-    async def sendIpNotSetUp(cls, channel: TextChannel):
-        await cls.sendEmbed(
-            channel,
-            [["**Set up your ip first!**"],
-            [f"You need to provide me your minecraft server's ip with `{prefix}set_ip <your ip>`. Your server must have StatMC plugin installed."]],
+            [[info_msgs["ip_not_set"]["name"][lang]],
+            [info_msgs["ip_not_set"]["value"][lang]]],
+            lang,
             colour=Colour.red()
         )

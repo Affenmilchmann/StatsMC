@@ -9,7 +9,7 @@ from discord.role import Role
 from discord.channel import TextChannel
 from discord.message import Message
 
-from cfg import DATA_FOLDER, DEFAULT_PORT, STAT_DATA_FOLDER, WEEK_NUMBER_FILE
+from cfg import DATA_FOLDER, DEFAULT_PORT, LANGS, STAT_DATA_FOLDER, WEEK_NUMBER_FILE, DEFAULT_LANG
 from Logger import Logger
 
 class StatFileManager():
@@ -96,15 +96,6 @@ class FileManager():
         return rtrn
 
     @classmethod
-    def getGuildData(cls, guild_id: int):
-        """Returns guild data. If file is not present returns False"""
-        try:
-            with open(f"{DATA_FOLDER}{guild_id}.json", 'r') as f:
-                return load(f)
-        except FileNotFoundError:
-            return False
-
-    @classmethod
     def getRole(cls, guild_id: int) -> int:
         data = cls.getGuildData(guild_id)
         if data:
@@ -119,19 +110,30 @@ class FileManager():
             guild_id=guild_id,
             manager_role_id=-1,
             server_ip="",
-            port=DEFAULT_PORT
+            port=DEFAULT_PORT,
+            lang=DEFAULT_LANG
         )
         StatFileManager.createStats(guild_id)
 
     @classmethod
-    def setGuildData(cls, guild_id: int, manager_role_id: int, server_ip: str, port: str):
+    def setGuildData(cls, guild_id: int, manager_role_id: int, server_ip: str, port: str, lang: str):
         """Saves dict {'server_ip': server_ip, 'port': port} in file <id>.json"""
         with open(f"{DATA_FOLDER}{guild_id}.json", 'w') as f:
             dump({
                 "mgr_role": manager_role_id,
                 "server_ip": server_ip,
-                "port": port
+                "port": port,
+                "lang": lang
             }, f)
+
+    @classmethod
+    def getGuildData(cls, guild_id: int):
+        """Returns guild data. If file is not present returns False"""
+        try:
+            with open(f"{DATA_FOLDER}{guild_id}.json", 'r') as f:
+                return load(f)
+        except FileNotFoundError:
+            return False
 
     @classmethod
     def setRole(cls, guild_id: int, new_manager_role: Role):
@@ -139,7 +141,7 @@ class FileManager():
         data = cls.getGuildData(guild_id)
         if not data:
             return False
-        cls.setGuildData(guild_id, new_manager_role.id, data["server_ip"], data["port"])
+        cls.setGuildData(guild_id, new_manager_role.id, data["server_ip"], data["port"], data["lang"])
 
     @classmethod
     def setServerIp(cls, guild_id: int, new_ip: str):
@@ -147,7 +149,7 @@ class FileManager():
         data = cls.getGuildData(guild_id)
         if not data:
             return False
-        cls.setGuildData(guild_id, data["mgr_role"], new_ip, data["port"])
+        cls.setGuildData(guild_id, data["mgr_role"], new_ip, data["port"], data["lang"])
 
     @classmethod
     def setPort(cls, guild_id: int, new_port: str):
@@ -155,4 +157,20 @@ class FileManager():
         data = cls.getGuildData(guild_id)
         if not data:
             return False
-        cls.setGuildData(guild_id, data["mgr_role"], data["server_ip"], new_port)
+        cls.setGuildData(guild_id, data["mgr_role"], data["server_ip"], new_port, data["lang"])
+
+    @classmethod
+    def setLangRu(cls, guild_id: int):
+        """Sets channel for guild. Returns False if file is not present"""
+        data = cls.getGuildData(guild_id)
+        if not data:
+            return False
+        cls.setGuildData(guild_id, data["mgr_role"], data["server_ip"], data["port"], LANGS["russian"])
+
+    @classmethod
+    def setLangEn(cls, guild_id: int):
+        """Sets channel for guild. Returns False if file is not present"""
+        data = cls.getGuildData(guild_id)
+        if not data:
+            return False
+        cls.setGuildData(guild_id, data["mgr_role"], data["server_ip"], data["port"], LANGS["english"])

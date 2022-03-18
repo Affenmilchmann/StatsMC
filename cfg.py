@@ -23,11 +23,18 @@ if not ospath.exists(WEEK_NUMBER_FILE):
         dump(0, f)
         Logger.printLog(f"{WEEK_NUMBER_FILE} was missiog so it was created")
 
+BOT_NAME = "StatsMC"
 prefix = "st!"
 default_embeds_colour = Colour.green()
 API_PATH = "/mcstats/all_players"
 DEFAULT_PORT = "11236"
 TIME_OUT = 5 #seconds
+
+LANGS = {
+    "russian" : "ru",
+    "english": "en"
+}
+DEFAULT_LANG = LANGS["english"]
 
 CUTOFF = 0.4
 MAX_GUESSES = 10
