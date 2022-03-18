@@ -8,6 +8,7 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.colour import Colour
 from discord.guild import Member, Guild
+from discord.errors import Forbidden
 from ApiManager import ApiManager
 
 from cfg import BOT_NAME, default_embeds_colour, prefix, DEFAULT_PORT
@@ -73,11 +74,15 @@ class MessageSender():
         if author:
             embed_.set_author(name=str(author.name)+'#'+str(author.discriminator), icon_url=author.avatar_url)
 
-        if delete_after > 0:
-            return await channel.send(embed=embed_, delete_after=delete_after)
-        else:
-            return await channel.send(embed=embed_)
-
+        try:
+            if delete_after > 0:
+                return await channel.send(embed=embed_, delete_after=delete_after)
+            else:
+                return await channel.send(embed=embed_)
+        except Forbidden as e:
+            Logger.printLog("Cant send message. Forbidden. Check logs", error=True)
+            Logger.writeApiFatalLog(f"Forbidden. Guild: name:{channel.guild} id:{channel.guild.id}. Channel: name:{channel.name} id: {channel.id}")
+            
     @classmethod
     async def sendStats(cls, channel: TextChannel, player_data: List[Tuple[str, int]], stat: str, lang: str, arg: str = None):
         title = f"{stats[stat]['description']}"
