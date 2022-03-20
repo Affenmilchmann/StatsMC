@@ -69,6 +69,7 @@ class StatApp():
             await self.owner_commands[command].handler(message)
         if type(message.channel) == TextChannel:
             Logger.writeApiLog(f"Guild {message.guild}({message.guild.id}) called '{message.content}'")
+            StatFileManager.incCallStat(message.guild.id)
             if command in self.manager_commands:
                 guild_data = FileManager.getGuildData(message.guild.id)
                 if self.__isPermitted(message):
@@ -112,7 +113,6 @@ class StatApp():
             top_list = ApiManager.getRegularStats(guild_data["server_ip"], guild_data["port"], stats[stat])
             if top_list != False:
                 await MessageSender.sendStats(message.channel, top_list, stat, guild_data["lang"])
-                StatFileManager.incCallStat(message.guild.id)
             else:
                 await MessageSender.sendCantConnect(message.channel, guild_data["lang"])
             return
@@ -141,7 +141,6 @@ class StatApp():
             top_list = ApiManager.getComplexStats(guild_data["server_ip"], guild_data["port"], stats[stat], "block_type", materials[arg], arg)
         if top_list != False:
             await MessageSender.sendStats(message.channel, top_list, stat, guild_data["lang"], arg)
-            StatFileManager.incCallStat(message.guild.id)
         else:
             await MessageSender.sendCantConnect(message.channel, guild_data["lang"])
 
