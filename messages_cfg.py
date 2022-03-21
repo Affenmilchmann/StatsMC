@@ -304,10 +304,12 @@ info_msgs = {
         "value": {
             "en": f"Make sure you have\n \
                     - Installed {BOT_NAME} plugin (Link can be found in `{prefix}help`)\n \
+                    - Server IP is correct. Without port (without ':' and digits after) (Ссылка в `{prefix}help`)\n \
                     - Port {DEFAULT_PORT} opened on your server",
             "ru": f"Убедитесь, что вы\n \
                     - Установили плагин {BOT_NAME} (Ссылка в `{prefix}help`)\n \
-                    - Порт {DEFAULT_PORT} открыт в настройках вашего сервера"
+                    - Айпи сервера указан корректно. Без порта, то есть без двоеточия и цифр после него\n \
+                    - Порт {DEFAULT_PORT} открыт в настройках вашего сервера (уточните у хостинга, как это сделать, если не понимаете, о чём речь)"
         }
     },
     "ip_not_set": {
