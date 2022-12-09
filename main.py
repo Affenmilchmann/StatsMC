@@ -1,8 +1,8 @@
-from discord import Client
+from discord import Client, Intents
 
-from StatApp import StatApp
+from app.StatApp import StatApp
 from aftoken import af_token
-from Logger import Logger
+from app.src.Logger import Logger
 
 class AfClient(Client):
     def __init__(self, *args, **kwargs):
@@ -17,9 +17,10 @@ class AfClient(Client):
             self.initApp()
         await self.app.onMessage(message)
 
-client = AfClient()
+intents = Intents.default()
+intents.message_content = True
+intents.members = True
 
-try:
-    client.run(af_token)
-except Exception as e:
-    Logger.printLog(f"Crashed. Error: {e}", error=True)
+client = AfClient(intents = intents)
+
+client.run(af_token)
