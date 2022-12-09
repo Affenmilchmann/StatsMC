@@ -9,13 +9,13 @@
 <a name="introduction"></a>
 
 ## Intruduction
-### StatsMC is a discord bot, that allows you to access minecraft vanilla statistics with commands right inside your discord server. **It requires [StatsMC plugin](https://github.com/Affenmilchmann/StatsMC-plugin) to be installed on the minecraft server!**
+StatsMC is a discord bot, that allows you to access minecraft vanilla statistics with commands right inside your discord server. **It requires [StatsMC plugin](https://github.com/Affenmilchmann/StatsMC-plugin) to be installed on the minecraft server!**
 
 ### Plugin API entry points documentation is written in plugin repository's [readme](https://github.com/Affenmilchmann/StatsMC-plugin#readme)
 
 <a name="examples"></a>
 
->## Examples:
+## Examples:
 <div style="display:flex; flex-flow:row wrap;">
   <img src="img/img1.png" alt="example 1" max-width="50%" style="margin:5px;" />
   <img src="img/img2.png" alt="example 2" max-width="50%" style="margin:5px;" />
@@ -25,7 +25,7 @@
 
 <a name="installation-instructions"></a>
 
->## Setting up
+## Setting up
 1) Clone the repository
 2) Create `aftoken.py` file and paste there your bot's token.
 3) Run `main.py`
