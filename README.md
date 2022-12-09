@@ -17,10 +17,10 @@
 
 >## Examples:
 <div style="display:flex; flex-flow:row wrap;">
-  <img src="img1.png" alt="example 1" max-width="50%" style="margin:5px;" />
-  <img src="img2.png" alt="example 2" max-width="50%" style="margin:5px;" />
-  <img src="img3.png" alt="example 3" max-width="50%" style="margin:5px;" />
-  <img src="img4.png" alt="example 4" max-width="50%" style="margin:5px;" />
+  <img src="img/img1.png" alt="example 1" max-width="50%" style="margin:5px;" />
+  <img src="img/img2.png" alt="example 2" max-width="50%" style="margin:5px;" />
+  <img src="img/img3.png" alt="example 3" max-width="50%" style="margin:5px;" />
+  <img src="img/img4.png" alt="example 4" max-width="50%" style="margin:5px;" />
 </div>
 
 <a name="installation-instructions"></a>
@@ -43,7 +43,7 @@ python3 main.py
 ## Bot commands
 
 <div style="display:flex; flex-flow:row wrap;">
-  <img src="help.png" alt="help 1" max-width="50%" style="margin:5px;" />
-  <img src="help2.png" alt="help 2" max-width="50%" style="margin:5px;" />
-  <img src="help3.png" alt="jelp 3" max-width="50%" style="margin:5px;" />
+  <img src="img/help.png" alt="help 1" max-width="50%" style="margin:5px;" />
+  <img src="img/help2.png" alt="help 2" max-width="50%" style="margin:5px;" />
+  <img src="img/help3.png" alt="jelp 3" max-width="50%" style="margin:5px;" />
 </div>
