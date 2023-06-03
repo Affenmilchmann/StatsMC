@@ -1,5 +1,5 @@
 from datetime import datetime
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 from json import load, dump
 from typing import List
@@ -79,6 +79,10 @@ class StatFileManager():
             cls.createStats(guild_id, 1)
             return
         cls.__setStats(guild_id, stats["total_calls"] + 1, stats["calls_this_week"] + 1)
+
+    @classmethod
+    def rmFile(cls, guild_id: int):
+        remove(f"{STAT_DATA_FOLDER}{guild_id}.json")
 
 class FileManager():
     @classmethod
@@ -174,3 +178,7 @@ class FileManager():
         if not data:
             return False
         cls.setGuildData(guild_id, data["mgr_role"], data["server_ip"], data["port"], LANGS["english"])
+
+    @classmethod
+    def rmFile(cls, guild_id: int):
+        remove(f"{DATA_FOLDER}{guild_id}.json")
