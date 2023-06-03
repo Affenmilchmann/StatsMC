@@ -1,2 +1,5 @@
 *.pyc
 aftoken.py
+app/src/config/statistics
+app/src/config/data
+app/src/logs
