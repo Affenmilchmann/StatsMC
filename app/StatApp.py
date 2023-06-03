@@ -6,7 +6,7 @@ from discord.message import Message
 from discord.guild import Guild, Member
 from discord.role import Role
 from discord.channel import TextChannel
-from discord.errors import Forbidden
+from discord.errors import Forbidden, NotFound
 
 from .src.config.cfg import DEFAULT_LANG, prefix, owner_id
 from .src.config.messages_cfg import help_links, command_descriptions, help_labels, guide_message, example_message, basic_commands_message
@@ -282,6 +282,12 @@ class StatApp():
                     guild_names.append(f"Name: `{guild.name}` Id: `{id_}`")
             except Forbidden:
                 guild_names.append(f"Name: *`Guild is forbidden`* Id: `{id_}`")
+                FileManager.rmFile(id_) 
+                StatFileManager.rmFile(id_)
+            except NotFound:
+                guild_names.append(f"Name: *`Guild not found`* Id: `{id_}`")                
+                FileManager.rmFile(id_)
+                StatFileManager.rmFile(id_)
 
             guilds_data.append(f"```{dumps(FileManager.getGuildData(id_), indent=4)}```")
     
@@ -306,6 +312,12 @@ class StatApp():
                     guild_names.append(f"Name: `{guild.name}` Id: `{id_}`")
             except Forbidden:
                 guild_names.append(f"Name: *`Guild is forbidden`* Id: `{id_}`")
+                FileManager.rmFile(id_) 
+                StatFileManager.rmFile(id_)
+            except NotFound:
+                guild_names.append(f"Name: *`Guild not found`* Id: `{id_}`")                
+                FileManager.rmFile(id_)
+                StatFileManager.rmFile(id_)
 
             guilds_data.append(f"```{dumps(StatFileManager.getStats(id_), indent=4)}```")
 
