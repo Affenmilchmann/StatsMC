@@ -273,7 +273,12 @@ class StatApp():
         guild_ids = FileManager.getGuildsIds()
         guilds_data: List = []
         guild_names: List[str] = []
+        idle_guilds = 0
         for id_ in guild_ids:
+            data = FileManager.getGuildData(id_)
+            if not data["server_ip"]:
+                idle_guilds += 1
+                continue
             try:
                 guild: Guild = await self.client.fetch_guild(id_)
                 if not guild:
@@ -296,7 +301,7 @@ class StatApp():
 
         await MessageSender.sendEmbed(
             message.channel,
-            [guild_names, guilds_data],
+            [guild_names + ["Amount of servers that have never succeeded to set ip:"], guilds_data + [idle_guilds]],
             DEFAULT_LANG,
             guild_footer=False,
         )
@@ -306,7 +311,14 @@ class StatApp():
         guild_ids = StatFileManager.getGuildsIds()
         guilds_data: List = []
         guild_names: List[str] = []
+        empty_guilds = 0
         for id_ in guild_ids:
+            data = StatFileManager.getStats(id_)
+            if data["total_calls"] == 0:
+                empty_guilds += 1
+                continue
+            guilds_data.append(f"```{dumps(StatFileManager.getStats(id_), indent=4)}```")
+
             try:
                 guild: Guild = await self.client.fetch_guild(id_)
                 if not guild:
@@ -322,15 +334,13 @@ class StatApp():
                 FileManager.rmFile(id_)
                 StatFileManager.rmFile(id_)
 
-            guilds_data.append(f"```{dumps(StatFileManager.getStats(id_), indent=4)}```")
-
     
         if len(guild_names) == 0: guild_names.append("No guilds.")
         if len(guilds_data) == 0: guilds_data.append("No data.")
 
         await MessageSender.sendEmbed(
             message.channel,
-            [guild_names, guilds_data],
+            [guild_names + ["Amount of servers with zero activity ever:"], guilds_data + [empty_guilds]],
             DEFAULT_LANG,
             guild_footer=False
         )
