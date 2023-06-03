@@ -291,6 +291,9 @@ class StatApp():
 
             guilds_data.append(f"```{dumps(FileManager.getGuildData(id_), indent=4)}```")
     
+        if len(guild_names) == 0: guild_names.append("No guilds.")
+        if len(guilds_data) == 0: guilds_data.append("No data.")
+
         await MessageSender.sendEmbed(
             message.channel,
             [guild_names, guilds_data],
@@ -320,6 +323,10 @@ class StatApp():
                 StatFileManager.rmFile(id_)
 
             guilds_data.append(f"```{dumps(StatFileManager.getStats(id_), indent=4)}```")
+
+    
+        if len(guild_names) == 0: guild_names.append("No guilds.")
+        if len(guilds_data) == 0: guilds_data.append("No data.")
 
         await MessageSender.sendEmbed(
             message.channel,
