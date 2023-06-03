@@ -4,8 +4,10 @@ from ..Logger import Logger
 
 from discord.colour import Colour
 
-DATA_FOLDER = ospath.join(ospath.dirname(__file__), "data/")
-STAT_DATA_FOLDER = ospath.join(ospath.dirname(__file__), "statistics/")
+ROOT_DIR = ospath.join(ospath.dirname(__file__), "..", "..", "..")
+
+DATA_FOLDER = ospath.join(ROOT_DIR, "data/")
+STAT_DATA_FOLDER = ospath.join(ROOT_DIR, "statistics/")
 WEEK_NUMBER_FILE = ospath.join(STAT_DATA_FOLDER, "week_number.json")
 def check_dir(dir: str):
     if not ospath.exists(dir):

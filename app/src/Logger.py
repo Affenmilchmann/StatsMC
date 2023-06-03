@@ -1,7 +1,9 @@
 from datetime import datetime as dt
 from os import path as ospath, mkdir
 
-LOG_FOLDER = ospath.join(ospath.dirname(__file__), "logs/")
+ROOT_DIR = ospath.join(ospath.dirname(__file__), "..", "..")
+
+LOG_FOLDER = ospath.join(ROOT_DIR, "logs/")
 API_LOG = ospath.join(LOG_FOLDER, "api_log.txt")
 API_FATAL_LOG = ospath.join(LOG_FOLDER, "api_fatal_log.txt")
 
