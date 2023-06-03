@@ -275,7 +275,7 @@ class StatApp():
         guild_names: List[str] = []
         for id_ in guild_ids:
             try:
-                guild: Guild = await self.client.fetch_guild(guild_id=id_)
+                guild: Guild = await self.client.fetch_guild(id_)
                 if not guild:
                     guild_names.append(f"Name: *`Cant fetch guild`* Id: `{id_}`")
                 else:
@@ -299,7 +299,7 @@ class StatApp():
         guild_names: List[str] = []
         for id_ in guild_ids:
             try:
-                guild: Guild = await self.client.fetch_guild(guild_id=id_)
+                guild: Guild = await self.client.fetch_guild(id_)
                 if not guild:
                     guild_names.append(f"Name: *`Cant fetch guild`* Id: `{id_}`")
                 else:
