@@ -16,8 +16,9 @@ class ApiManager():
         if not resp.ok:
             Logger.writeApiFatalLog(f"[NOT OK] {resp.url} {resp.content}")
             return False
-
+        
         return loads(resp.text.encode('utf8'))
+    
     @classmethod
     def getComplexStats(cls, ip: str, port: str, stat_data: dict, arg_name: str, arg_data: dict, arg_val: str) -> List[Tuple[str, int]]:
         addr = f"http://{ip}:{port}{API_PATH}"
@@ -51,5 +52,5 @@ class ApiManager():
             data[i] = (data[i][0], int(data[i][1] / devide_factor))
 
     @classmethod
-    def getMcHeadApi(cls, player_name: str, size: int = 100):
-        return cls.__sendRequest({}, f'https://mc-heads.net/head/{player_name}/{size}.png')
+    def getMcHeadApiLink(cls, player_name: str, size: int = 100):
+        return f'https://mc-heads.net/head/{player_name}/{size}.png'

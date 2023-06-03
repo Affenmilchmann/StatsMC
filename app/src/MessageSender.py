@@ -106,7 +106,7 @@ class MessageSender():
 
         if len(player_names) > 0:
             # getting skin avatar for the top leader
-            mchead_api_return = ApiManager.getMcHeadApi(player_names[0])
+            mchead_api_return = ApiManager.getMcHeadApiLink(player_data[0][0])
 
         await cls.sendEmbed(
             channel,
